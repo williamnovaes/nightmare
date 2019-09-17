@@ -43,6 +43,7 @@ public class Player : MonoBehaviour
     {
         horizontal = Input.GetAxisRaw("Horizontal");
 
+
         playerRB.velocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
 
         if ((facingRigth && horizontal < 0) || !facingRigth && horizontal > 0)
@@ -59,6 +60,10 @@ public class Player : MonoBehaviour
         anim.SetBool("Walking", horizontal != 0f);
         anim.SetFloat("VelocityX", playerRB.velocity.x);
         anim.SetFloat("VelocityY", playerRB.velocity.y);
+        if (Input.GetButtonDown("Fire3"))
+        {
+            anim.SetTrigger("Transform");
+        }
     }
 
     void Flip()
