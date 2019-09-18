@@ -5,27 +5,21 @@ using UnityEngine.UI;
 
 public class Cronometro : MonoBehaviour
 {
-    Text text;
-    long timer;
+    public Text text;
+    private long timer;
 
-    float time;
-    float localTime;
+    private float time;
+    public float localTime;
 
     void Awake()
     {
-        text.text = "00:30:00";    
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
+        text.text = "00:30:00";
+        localTime = 0f;
         timer = 1000 * 60 * 30;
-        text = GetComponent<Text>();
         time = 1f;
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         localTime += Time.deltaTime;
         if (localTime >= time)

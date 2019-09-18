@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     private bool grounded;
     private bool touchingWall;
 
+    private float running;
+
     public float jumpForce;
 
     public Transform groundCheck;
@@ -37,29 +39,29 @@ public class Player : MonoBehaviour
     void Update()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
-    }
+        if (Input.GetButtonDown("Jump") && grounded)
+        {
+            playerRB.AddForce(new Vector2(0, jumpForce));
+        }
 
-    void FixedUpdate()
-    {
         horizontal = Input.GetAxisRaw("Horizontal");
+        running = Input.GetAxisRaw("Fire3");
 
-
-        playerRB.velocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
+        if (!touchingWall)
+        {
+            playerRB.velocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
+        }
 
         if ((facingRigth && horizontal < 0) || !facingRigth && horizontal > 0)
         {
             Flip();
         }
 
-        if (Input.GetButtonDown("Jump") && grounded)
-        {
-            playerRB.AddForce(new Vector2(0, jumpForce));
-        }
-
         anim.SetBool("Grounded", grounded);
         anim.SetBool("Walking", horizontal != 0f);
         anim.SetFloat("VelocityX", playerRB.velocity.x);
         anim.SetFloat("VelocityY", playerRB.velocity.y);
+        anim.SetBool("Running", running > 0f);
         if (Input.GetButtonDown("Fire3"))
         {
             anim.SetTrigger("Transform");
@@ -76,7 +78,7 @@ public class Player : MonoBehaviour
 
     void OnTriggerStay2D(Collider2D collision)
     {
-        if (!collision.isTrigger && collision.gameObject.tag.Equals("Block"))
+        if (!collision.isTrigger && collision.gameObject.layer.Equals("Wall"))
         {
             touchingWall = true;
         }
