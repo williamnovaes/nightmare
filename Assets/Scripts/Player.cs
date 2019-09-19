@@ -39,10 +39,7 @@ public class Player : MonoBehaviour
     void Update()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
-        if (Input.GetButtonDown("Jump") && grounded)
-        {
-            playerRB.AddForce(new Vector2(0, jumpForce));
-        }
+     
 
         horizontal = Input.GetAxisRaw("Horizontal");
         running = Input.GetAxisRaw("Fire3");
@@ -65,6 +62,14 @@ public class Player : MonoBehaviour
         if (Input.GetButtonDown("Fire3"))
         {
             anim.SetTrigger("Transform");
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (Input.GetButtonDown("Jump") && grounded)
+        {
+            playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
         }
     }
 
