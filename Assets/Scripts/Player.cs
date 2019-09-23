@@ -22,12 +22,6 @@ public class Player : MonoBehaviour
 
     public LayerMask whatIsGround;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-       
-    }
-
     void Awake()
     {
         playerRB = GetComponent<Rigidbody2D>();
@@ -38,12 +32,6 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
-        if (Input.GetButtonDown("Jump") && grounded)
-        {
-            playerRB.AddForce(new Vector2(0, jumpForce));
-        }
-
         horizontal = Input.GetAxisRaw("Horizontal");
         running = Input.GetAxisRaw("Fire3");
 
@@ -64,7 +52,23 @@ public class Player : MonoBehaviour
         anim.SetBool("Running", running > 0f);
         if (Input.GetButtonDown("Fire3"))
         {
+            anim.SetLayerWeight(0, 1);
             anim.SetTrigger("Transform");
+        }
+        if (Input.GetButtonUp("Fire3"))
+        {
+            anim.SetLayerWeight(1, 1);
+            anim.SetTrigger("Transform");
+        }
+    }
+
+    void FixedUpdate()
+    {
+        grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
+
+        if (Input.GetButtonDown("Jump") && grounded)
+        {
+            playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
         }
     }
 
