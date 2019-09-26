@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-
     private Rigidbody2D playerRB;
     private Animator anim;
 
@@ -22,11 +21,23 @@ public class Player : MonoBehaviour
 
     public LayerMask whatIsGround;
 
+    public GameObject objWolf;
+    public GameObject objHuman;
+
+    public bool isWolf;
+    public bool isHuman;
+    public bool isBat;
+
     void Awake()
     {
         playerRB = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        //objHuman = GameObject.FindWithTag("Human");
+       // objWolf = GameObject.FindWithTag("Wolf");
         facingRigth = true;
+        isHuman = true;
+        AlterarLayersWeight(1, 0, 0, 0);
+        AlterarObjects();
     }
 
     // Update is called once per frame
@@ -50,18 +61,37 @@ public class Player : MonoBehaviour
         anim.SetFloat("VelocityX", playerRB.velocity.x);
         anim.SetFloat("VelocityY", playerRB.velocity.y);
         anim.SetBool("Running", running > 0f);
+
         if (Input.GetButtonDown("Fire3"))
         {
-            anim.SetLayerWeight(0, 1);
+            AlterarLayersWeight(1, 0, 0, 0);
             anim.SetTrigger("Transform");
+            isHuman = false;
+            isWolf = true;
+            AlterarObjects();
         }
         if (Input.GetButtonUp("Fire3"))
         {
-            anim.SetLayerWeight(1, 1);
+            AlterarLayersWeight(0, 1, 0, 0);
             anim.SetTrigger("Transform");
+            isHuman = true;
+            isWolf = false;
+            AlterarObjects();
         }
     }
 
+    void AlterarObjects() {
+        objHuman.SetActive(isHuman);
+        objWolf.SetActive(isWolf);
+    }
+
+    void AlterarLayersWeight(int val, int val2, int val3, int val4)
+    {
+        anim.SetLayerWeight(0, val);
+        anim.SetLayerWeight(1, val2);
+        anim.SetLayerWeight(2, val3);
+        anim.SetLayerWeight(3, val4);
+    }
     void FixedUpdate()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
