@@ -57,32 +57,42 @@ public class Player : MonoBehaviour
         }
 
         anim.SetBool("Grounded", grounded);
-        anim.SetBool("Walking", horizontal != 0f);
+        anim.SetBool("Walking", isWalking());
         anim.SetFloat("VelocityX", playerRB.velocity.x);
         anim.SetFloat("VelocityY", playerRB.velocity.y);
         anim.SetBool("Running", running > 0f);
 
         if (Input.GetButtonDown("Fire3"))
         {
-            AlterarLayersWeight(1, 0, 0, 0);
+            AlterarLayersWeight(0, 1, 0, 0);
             anim.SetTrigger("Transform");
             isHuman = false;
             isWolf = true;
             AlterarObjects();
+            anim.Play("knight_wolf_transform");
         }
         if (Input.GetButtonUp("Fire3"))
         {
-            AlterarLayersWeight(0, 1, 0, 0);
+            AlterarLayersWeight(1, 0, 0, 0);
+            AlterarFlagsForma(true, false, false, false);
             anim.SetTrigger("Transform");
             isHuman = true;
             isWolf = false;
             AlterarObjects();
+            anim.Play("knight_wolf_transform");
         }
     }
 
     void AlterarObjects() {
         objHuman.SetActive(isHuman);
         objWolf.SetActive(isWolf);
+    }
+
+    void AlterarFlagsForma(bool human, bool wolf, bool bat, bool golen)
+    {
+        isHuman = human;
+        isWolf = wolf;
+        isBat = bat;
     }
 
     void AlterarLayersWeight(int val, int val2, int val3, int val4)
@@ -121,5 +131,10 @@ public class Player : MonoBehaviour
     private void OnTriggerExit2D(Collider2D collision)
     {
         touchingWall = false;
+    }
+
+    bool isWalking()
+    {
+        return horizontal > 0f || horizontal < 0f;
     }
 }
