@@ -25,116 +25,129 @@ public class Player : MonoBehaviour
     public GameObject objHuman;
 
     public bool isWolf;
-    public bool isHuman;
+    public bool isHuman = true;
     public bool isBat;
 
     void Awake()
     {
         playerRB = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        //objHuman = GameObject.FindWithTag("Human");
-       // objWolf = GameObject.FindWithTag("Wolf");
-        facingRigth = true;
-        isHuman = true;
-        AlterarLayersWeight(1, 0, 0, 0);
-        AlterarObjects();
+        ChangeLayersWeight(GetLayerValue(isHuman), GetLayerValue(isWolf), GetLayerValue(isBat), 0);
+        ChangeModeSpriteVisible();
     }
 
     // Update is called once per frame
     void Update()
     {
-        horizontal = Input.GetAxisRaw("Horizontal");
+        Walk();
+        Jump();
+        Flip();
+
         running = Input.GetAxisRaw("Fire3");
 
-        if (!touchingWall)
-        {
-            playerRB.velocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
-        }
-
-        if ((facingRigth && horizontal < 0) || !facingRigth && horizontal > 0)
-        {
-            Flip();
-        }
-
         anim.SetBool("Grounded", grounded);
-        anim.SetBool("Walking", isWalking());
+        anim.SetBool("Walking", IsWalking());
         anim.SetFloat("VelocityX", playerRB.velocity.x);
         anim.SetFloat("VelocityY", playerRB.velocity.y);
-        anim.SetBool("Running", running > 0f);
+        anim.SetBool("Running", running > Mathf.Epsilon);
 
         if (Input.GetButtonDown("Fire3"))
         {
-            AlterarLayersWeight(0, 1, 0, 0);
-            anim.SetTrigger("Transform");
             isHuman = false;
             isWolf = true;
-            AlterarObjects();
+            ChangeLayersWeight(GetLayerValue(isHuman), GetLayerValue(isWolf), GetLayerValue(isBat), 0);
+            anim.SetTrigger("Transform");
+            ChangeModeSpriteVisible();
             anim.Play("knight_wolf_transform");
         }
         if (Input.GetButtonUp("Fire3"))
         {
-            AlterarLayersWeight(1, 0, 0, 0);
-            AlterarFlagsForma(true, false, false, false);
-            anim.SetTrigger("Transform");
             isHuman = true;
             isWolf = false;
-            AlterarObjects();
+            ChangeLayersWeight(GetLayerValue(isHuman), GetLayerValue(isWolf), GetLayerValue(isBat), 0);
+            ChangeTransformationFlag(true, false, false, false);
+            anim.SetTrigger("Transform");
+            ChangeModeSpriteVisible();
             anim.Play("knight_wolf_transform");
         }
     }
 
-    void AlterarObjects() {
+    void FixedUpdate()
+    {
+        grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
+    }
+
+    int GetLayerValue(bool check)
+    {
+        return check ? 1 : 0;
+    }
+
+    void ChangeModeSpriteVisible() {
         objHuman.SetActive(isHuman);
         objWolf.SetActive(isWolf);
     }
 
-    void AlterarFlagsForma(bool human, bool wolf, bool bat, bool golen)
+    void ChangeTransformationFlag(bool human, bool wolf, bool bat, bool golen)
     {
         isHuman = human;
         isWolf = wolf;
         isBat = bat;
     }
 
-    void AlterarLayersWeight(int val, int val2, int val3, int val4)
+    void ChangeLayersWeight(int val, int val2, int val3, int val4)
     {
         anim.SetLayerWeight(0, val);
         anim.SetLayerWeight(1, val2);
         anim.SetLayerWeight(2, val3);
         anim.SetLayerWeight(3, val4);
     }
-    void FixedUpdate()
-    {
-        grounded = Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
 
+    void Flip()
+    {
+        if (Mathf.Abs(playerRB.velocity.x) > Mathf.Epsilon) //velocity + turn right / velocity - turn left
+        {
+            transform.localScale = new Vector2 (Mathf.Sign(playerRB.velocity.x), transform.localScale.y);
+        }
+        //facingRigth = !facingRigth;
+        //Vector2 scale = transform.localScale;
+        //scale.x *= -1;
+        //transform.localScale = scale;
+    }
+
+    void Walk()
+    {
+        horizontal = Input.GetAxisRaw("Horizontal");
+        if (!touchingWall) { 
+            Vector2 playerVelocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
+            playerRB.velocity = playerVelocity;
+        }
+    }
+
+    void Jump()
+    {
         if (Input.GetButtonDown("Jump") && grounded)
         {
             playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
         }
     }
 
-    void Flip()
+    bool IsWalking()
     {
-        facingRigth = !facingRigth;
-        Vector2 scale = transform.localScale;
-        scale.x *= -1;
-        transform.localScale = scale;
+        return horizontal > 0f || horizontal < 0f;
     }
 
-    void OnTriggerStay2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.isTrigger && collision.gameObject.layer.Equals("Wall"))
-        {
-            touchingWall = true;
-        }
+        touchingWall = CheckWallCollision(collision) ? true : touchingWall;
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        touchingWall = false;
+        touchingWall = CheckWallCollision(collision) ? false : touchingWall;
     }
 
-    bool isWalking()
+    bool CheckWallCollision(Collider2D collision)
     {
-        return horizontal > 0f || horizontal < 0f;
+        return collision.gameObject.layer.Equals("Wall");
     }
 }
