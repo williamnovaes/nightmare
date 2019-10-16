@@ -7,7 +7,7 @@ public class Player : MonoBehaviour
 {
     Rigidbody2D playerRB;
     Animator playerAnim;
-    Collider2D playerColl;
+    CapsuleCollider2D playerColl;
 
     [SerializeField] Transform groundCheck;
     [SerializeField] LayerMask whatIsGround;
@@ -18,19 +18,20 @@ public class Player : MonoBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private float climbSpeed;
 
+    private float gravityScaleStart;
     private float horizontal;
     private float running;
 
-    private bool touchingWall;
-    private bool isWolf;
     private bool isHuman = true;
+    private bool isWolf;
     private bool isBat;
 
     void Awake()
     {
         playerRB = GetComponent<Rigidbody2D>();
         playerAnim = GetComponent<Animator>();
-        playerColl = GetComponent<Collider2D>();
+        playerColl = GetComponent<CapsuleCollider2D>();
+        gravityScaleStart = playerRB.gravityScale;
         ChangeLayersWeight(GetLayerValue(isHuman), GetLayerValue(isWolf), GetLayerValue(isBat), 0);
         ChangeModeSpriteVisible();
     }
@@ -46,7 +47,6 @@ public class Player : MonoBehaviour
         running = CrossPlatformInputManager.GetAxis("Fire3");
 
         playerAnim.SetBool("Grounded", Grounded());
-        playerAnim.SetBool("Walking", Walking());
         playerAnim.SetBool("Running", running > Mathf.Epsilon);
         playerAnim.SetFloat("VelocityX", playerRB.velocity.x);
         playerAnim.SetFloat("VelocityY", playerRB.velocity.y);
@@ -72,9 +72,63 @@ public class Player : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    void Flip()
     {
+        //Mathf.Abs return absolute value (Mathf.Abs(-10) eq 10)
+        if (Mathf.Abs(playerRB.velocity.x) > Mathf.Epsilon) //velocity + turn right / velocity - turn left
+        {
+            //Mathf.Sign return -1 for negative values and 1 for positive values (Mathf.Sign(-10) eq -1)
+            transform.localScale = new Vector2(Mathf.Sign(playerRB.velocity.x), transform.localScale.y);
+        }
+        //facingRigth = !facingRigth;
+        //Vector2 scale = transform.localScale;
+        //scale.x *= -1;
+        //transform.localScale = scale;
+    }
 
+    void Walk()
+    {
+        horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
+        Vector2 playerVelocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
+        playerRB.velocity = playerVelocity;
+
+        playerAnim.SetBool("Walking", Walking());
+    }
+
+    void Jump()
+    {
+        if (!Grounded()) { return; }
+
+        if (CrossPlatformInputManager.GetButtonDown("Jump"))
+        {
+            playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+            //other option to have more control of jump
+            //set gravity on Physycs2D to 100 or other value bigger than 9.8
+            //(more effective if pixels per unit of sprite is less than normal)
+            //Vector2 jump = new Vector2(0f, jumpSpeed);
+            //playerRB.velocity += jump;
+        }
+    }
+
+    private void ClimbLadder()
+    {
+        //reduce the collider size of ladder to center of sprite
+        //set isTrigger on composite collider of tile
+        if (!playerColl.IsTouchingLayers(LayerMask.GetMask("Ladder")))
+        {
+            playerAnim.SetBool("Climbing", false);
+            //set start gravity scale back to normalize gravity
+            playerRB.gravityScale = gravityScaleStart;
+            return;
+        }
+
+        float controlThrow = CrossPlatformInputManager.GetAxis("Vertical");
+        Vector2 climbVelocity = new Vector2(playerRB.velocity.x, controlThrow * climbSpeed);
+        playerRB.velocity = climbVelocity;
+        //0 to gravity scale for player dont drop down in ladder
+        playerRB.gravityScale = 0f;
+
+        playerAnim.SetBool("Climbing", Mathf.Abs(playerRB.velocity.y) > Mathf.Epsilon);
     }
 
     int GetLayerValue(bool check)
@@ -82,7 +136,8 @@ public class Player : MonoBehaviour
         return check ? 1 : 0;
     }
 
-    void ChangeModeSpriteVisible() {
+    void ChangeModeSpriteVisible()
+    {
         objHuman.SetActive(isHuman);
         objWolf.SetActive(isWolf);
     }
@@ -102,48 +157,18 @@ public class Player : MonoBehaviour
         playerAnim.SetLayerWeight(3, val4);
     }
 
-    void Flip()
-    {
-        //Mathf.Abs return absolute value (Mathf.Abs(-10) eq 10)
-        if (Mathf.Abs(playerRB.velocity.x) > Mathf.Epsilon) //velocity + turn right / velocity - turn left
-        {
-            //Mathf.Sign return -1 for negative values and 1 for positive values (Mathf.Sign(-10) eq -1)
-            transform.localScale = new Vector2(Mathf.Sign(playerRB.velocity.x), transform.localScale.y);
-        }
-        //facingRigth = !facingRigth;
-        //Vector2 scale = transform.localScale;
-        //scale.x *= -1;
-        //transform.localScale = scale;
-    }
-
-    void Walk()
-    {
-        horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
-        if (!touchingWall) {
-            Vector2 playerVelocity = new Vector2(horizontal * velocity, playerRB.velocity.y);
-            playerRB.velocity = playerVelocity;
-        }
-    }
-
-    void Jump()
-    {
-        if (!Grounded()) { return; }
-
-        if (CrossPlatformInputManager.GetButtonDown("Jump"))
-        {
-            playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
-            //other option to have more control of jump
-            //set gravity on Physycs2D to 100 or other value bigger than 9.8 (more effective if pixels per unit of sprite is less than normal)
-            //Vector2 jump = new Vector2(0f, jumpSpeed);
-            //playerRB.velocity += jump;
-        }
-    }
-
     bool Walking()
     {
         return Mathf.Abs(playerRB.velocity.x) > Mathf.Epsilon;
     }
 
+    private bool Grounded()
+    {
+        return playerColl.IsTouchingLayers(LayerMask.GetMask("Ground"));
+        //return Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
+    }
+
+    /*
     private void OnTriggerEnter2D(Collider2D collision)
     {
         touchingWall = CheckCollisionInWall(collision) ? true : touchingWall;
@@ -157,22 +182,5 @@ public class Player : MonoBehaviour
     bool CheckCollisionInWall(Collider2D collision)
     {
         return collision.gameObject.layer.Equals("Wall");
-    }
-
-    private bool Grounded()
-    {
-        //return playerColl.IsTouchingLayers(LayerMask.GetMask("Ground"));
-        return Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
-    }
-
-    private void ClimbLadder()
-    {
-        //reduce the collider size of ladder to center of sprite
-        //set isTrigger on composite collider of tile
-        if (!playerColl.IsTouchingLayers(LayerMask.GetMask("Ladder"))) { return; }
-
-        float controlThrow = CrossPlatformInputManager.GetAxis("Vertical");
-        Vector2 climbVelocity = new Vector2(playerRB.velocity.x, controlThrow * climbSpeed);
-        playerRB.velocity = climbVelocity;
-    }
+    }*/
 }

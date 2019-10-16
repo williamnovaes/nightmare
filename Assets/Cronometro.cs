@@ -25,7 +25,7 @@ public class Cronometro : MonoBehaviour
         if (localTime >= time)
         {
             timer -= 1000;
-            text.text = "00" + ((timer / 1000) / 60).ToString("00") + ":" + ((timer / 1000) % 60).ToString("00");
+            text.text = "00:" + ((timer / 1000) / 60).ToString("00") + ":" + ((timer / 1000) % 60).ToString("00");
             localTime = 0f;
         }
     }
