@@ -9,8 +9,6 @@ public class Player : MonoBehaviour
     Animator playerAnim;
     CapsuleCollider2D playerColl;
 
-    [SerializeField] Transform groundCheck;
-    [SerializeField] LayerMask whatIsGround;
     [SerializeField] GameObject objWolf;
     [SerializeField] GameObject objHuman;
 
@@ -164,7 +162,7 @@ public class Player : MonoBehaviour
 
     private bool Grounded()
     {
-        return playerColl.IsTouchingLayers(LayerMask.GetMask("Ground"));
+        return playerColl.IsTouchingLayers(LayerMask.GetMask("Foreground"));
         //return Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
     }
 
