@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Wolf
   - Human
+  - Ground
   layers:
   - Default
   - TransparentFX
@@ -20,8 +21,8 @@ TagManager:
   - Wall
   - Background
   - Foreground
-  - 
-  - 
+  - Details
+  - Enemy
   - 
   - 
   - 
@@ -43,12 +44,27 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Foreground
-    uniqueID: 2139057443
-    locked: 0
   - name: Background
     uniqueID: 65123431
     locked: 0
+  - name: Foreground
+    uniqueID: 2139057443
+    locked: 0
+  - name: Details
+    uniqueID: 125254867
+    locked: 0
+  - name: BackDetails
+    uniqueID: 1076199383
+    locked: 0
   - name: Player
     uniqueID: 1795379267
+    locked: 0
+  - name: FrontDetails
+    uniqueID: 2534439471
+    locked: 0
+  - name: Enemy
+    uniqueID: 3034472349
+    locked: 0
+  - name: UI
+    uniqueID: 2443242943
     locked: 0
