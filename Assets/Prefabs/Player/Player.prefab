@@ -236,15 +236,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0175347fd6d3c594aadf175350887e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  groundCheck: {fileID: 0}
-  whatIsGround:
-    serializedVersion: 2
-    m_Bits: 512
   objWolf: {fileID: 325819048}
   objHuman: {fileID: 7356644465968018832}
   velocity: 1.5
   jumpForce: 3.7
-  climbSpeed: 0
+  climbSpeed: 0.5
 --- !u!70 &5969165437080947254
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
