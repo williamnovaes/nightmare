@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float velocity;
     [SerializeField] private float jumpForce;
     [SerializeField] private float climbSpeed;
+    [SerializeField] private int health;
 
     private float gravityScaleStart;
     private float horizontal;
@@ -23,9 +25,14 @@ public class Player : MonoBehaviour
     private bool isHuman = true;
     private bool isWolf;
     private bool isBat;
+    private bool jumpOffCoroutineRunning;
+
+    //STATE
+    private bool isAlive;
 
     void Awake()
     {
+        isAlive = true;
         playerRB = GetComponent<Rigidbody2D>();
         playerAnim = GetComponent<Animator>();
         playerColl = GetComponent<CapsuleCollider2D>();
@@ -37,10 +44,13 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isAlive) { return; }
+
         Walk();
         Jump();
         Flip();
         ClimbLadder();
+        TakeDamage();
 
         running = CrossPlatformInputManager.GetAxis("Fire3");
 
@@ -99,13 +109,47 @@ public class Player : MonoBehaviour
 
         if (CrossPlatformInputManager.GetButtonDown("Jump"))
         {
-            playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
-            //other option to have more control of jump
-            //set gravity on Physycs2D to 100 or other value bigger than 9.8
-            //(more effective if pixels per unit of sprite is less than normal)
-            //Vector2 jump = new Vector2(0f, jumpSpeed);
-            //playerRB.velocity += jump;
+            if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+            {
+                StartCoroutine("JumpOff");
+            } else
+            {
+                playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+                //other option to have more control of jump
+                //set gravity on Physycs2D to 100 or other value bigger than 9.8
+                //(more effective if pixels per unit of sprite is less than normal)
+                //Vector2 jump = new Vector2(0f, jumpSpeed);
+                //playerRB.velocity += jump;
+            }
         }
+    }
+
+    private void TakeDamage()
+    {
+        CapsuleCollider2D activeCollider = isHuman ? objHuman.GetComponent<CapsuleCollider2D>() : objWolf.GetComponent<CapsuleCollider2D>();
+        if (activeCollider == null) { return; }
+
+        if (activeCollider.IsTouchingLayers(LayerMask.GetMask("Enemy", "Spikes")))
+        {
+            health--;
+        }
+
+        isAlive = !isDead();
+
+        if (!isAlive)
+        {
+            int indexCurrentScene = SceneManager.GetActiveScene().buildIndex;
+            SceneManager.LoadScene(indexCurrentScene);
+        }
+    }
+
+    IEnumerator JumpOff()
+    {
+        jumpOffCoroutineRunning = true;
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("PassThrough"), true);
+        yield return new WaitForSeconds(0.3f);
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("PassThrough"), false);
+        jumpOffCoroutineRunning = false;
     }
 
     private void ClimbLadder()
@@ -114,7 +158,7 @@ public class Player : MonoBehaviour
         //set isTrigger on composite collider of tile
         if (!playerColl.IsTouchingLayers(LayerMask.GetMask("Ladder")))
         {
-            playerAnim.SetBool("Climbing", false);
+            //playerAnim.SetBool("Climbing", false);
             //set start gravity scale back to normalize gravity
             playerRB.gravityScale = gravityScaleStart;
             return;
@@ -147,12 +191,12 @@ public class Player : MonoBehaviour
         isBat = bat;
     }
 
-    void ChangeLayersWeight(int val, int val2, int val3, int val4)
+    void ChangeLayersWeight(int val, int val1, int val2, int val3)
     {
         playerAnim.SetLayerWeight(0, val);
-        playerAnim.SetLayerWeight(1, val2);
-        playerAnim.SetLayerWeight(2, val3);
-        playerAnim.SetLayerWeight(3, val4);
+        playerAnim.SetLayerWeight(1, val1);
+        playerAnim.SetLayerWeight(2, val2);
+        playerAnim.SetLayerWeight(3, val3);
     }
 
     bool Walking()
@@ -162,10 +206,15 @@ public class Player : MonoBehaviour
 
     private bool Grounded()
     {
-        return playerColl.IsTouchingLayers(LayerMask.GetMask("Foreground"));
+        return playerColl.IsTouchingLayers(LayerMask.GetMask("Foreground", "PassThrough"));
         //return Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
     }
 
+    private bool isDead()
+    {
+        return health <= 0;
+    }
+    
     /*
     private void OnTriggerEnter2D(Collider2D collision)
     {

@@ -23,8 +23,8 @@ TagManager:
   - Foreground
   - Details
   - Enemy
-  - 
-  - 
+  - PassThrough
+  - Exit
   - 
   - 
   - 
@@ -58,6 +58,9 @@ TagManager:
     locked: 0
   - name: BackDetails
     uniqueID: 1076199383
+    locked: 0
+  - name: Exit
+    uniqueID: 2122483371
     locked: 0
   - name: Player
     uniqueID: 1795379267
