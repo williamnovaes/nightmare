@@ -47,6 +47,9 @@ TagManager:
   - name: Background
     uniqueID: 65123431
     locked: 0
+  - name: Mountain
+    uniqueID: 20861467
+    locked: 0
   - name: Foreground
     uniqueID: 2139057443
     locked: 0
