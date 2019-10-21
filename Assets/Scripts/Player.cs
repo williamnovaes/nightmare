@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -49,6 +50,7 @@ public class Player : MonoBehaviour
         Jump();
         Flip();
         ClimbLadder();
+        TakeDamage();
 
         running = CrossPlatformInputManager.GetAxis("Fire3");
 
@@ -122,6 +124,25 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void TakeDamage()
+    {
+        CapsuleCollider2D activeCollider = isHuman ? objHuman.GetComponent<CapsuleCollider2D>() : objWolf.GetComponent<CapsuleCollider2D>();
+        if (activeCollider == null) { return; }
+
+        if (activeCollider.IsTouchingLayers(LayerMask.GetMask("Enemy", "Spikes")))
+        {
+            health--;
+        }
+
+        isAlive = !isDead();
+
+        if (!isAlive)
+        {
+            int indexCurrentScene = SceneManager.GetActiveScene().buildIndex;
+            SceneManager.LoadScene(indexCurrentScene);
+        }
+    }
+
     IEnumerator JumpOff()
     {
         jumpOffCoroutineRunning = true;
@@ -131,15 +152,13 @@ public class Player : MonoBehaviour
         jumpOffCoroutineRunning = false;
     }
 
-
-
     private void ClimbLadder()
     {
         //reduce the collider size of ladder to center of sprite
         //set isTrigger on composite collider of tile
         if (!playerColl.IsTouchingLayers(LayerMask.GetMask("Ladder")))
         {
-            playerAnim.SetBool("Climbing", false);
+            //playerAnim.SetBool("Climbing", false);
             //set start gravity scale back to normalize gravity
             playerRB.gravityScale = gravityScaleStart;
             return;
@@ -172,12 +191,12 @@ public class Player : MonoBehaviour
         isBat = bat;
     }
 
-    void ChangeLayersWeight(int val, int val2, int val3, int val4)
+    void ChangeLayersWeight(int val, int val1, int val2, int val3)
     {
         playerAnim.SetLayerWeight(0, val);
-        playerAnim.SetLayerWeight(1, val2);
-        playerAnim.SetLayerWeight(2, val3);
-        playerAnim.SetLayerWeight(3, val4);
+        playerAnim.SetLayerWeight(1, val1);
+        playerAnim.SetLayerWeight(2, val2);
+        playerAnim.SetLayerWeight(3, val3);
     }
 
     bool Walking()
@@ -191,22 +210,9 @@ public class Player : MonoBehaviour
         //return Physics2D.OverlapCircle(groundCheck.position, .02f, whatIsGround);
     }
 
-    private void takeDamage()
-    {
-        CapsuleCollider2D activeCollider = isHuman ? objHuman.GetComponent<CapsuleCollider2D>() : objWolf.GetComponent<CapsuleCollider2D>();
-        if (activeCollider == null) { return; }
-
-        if (activeCollider.IsTouchingLayers(LayerMask.GetMask("Enemy", "Spikes")))
-        {
-            health--;
-        }
-
-        isAlive = !isDead();
-    }
-
     private bool isDead()
     {
-        return health > 0;
+        return health <= 0;
     }
     
     /*

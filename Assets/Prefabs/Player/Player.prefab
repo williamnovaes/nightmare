@@ -113,7 +113,7 @@ GameObject:
   - component: {fileID: 5969165437080947254}
   m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -170,7 +170,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1795379267
-  m_SortingLayer: 5
+  m_SortingLayer: 6
   m_SortingOrder: 0
   m_Sprite: {fileID: 7371535722059205722, guid: 4803bbe427c19e044ae2fd0a03193dca,
     type: 3}
@@ -239,8 +239,9 @@ MonoBehaviour:
   objWolf: {fileID: 325819048}
   objHuman: {fileID: 7356644465968018832}
   velocity: 1.5
-  jumpForce: 3.7
+  jumpForce: 4
   climbSpeed: 0.5
+  health: 1
 --- !u!70 &5969165437080947254
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
