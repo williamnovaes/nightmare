@@ -51,6 +51,7 @@ public class Player : MonoBehaviour
         Flip();
         ClimbLadder();
         TakeDamage();
+        PassThrough();
 
         running = CrossPlatformInputManager.GetAxis("Fire3");
 
@@ -109,18 +110,12 @@ public class Player : MonoBehaviour
 
         if (CrossPlatformInputManager.GetButtonDown("Jump"))
         {
-            if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-            {
-                StartCoroutine("JumpOff");
-            } else
-            {
-                playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
-                //other option to have more control of jump
-                //set gravity on Physycs2D to 100 or other value bigger than 9.8
-                //(more effective if pixels per unit of sprite is less than normal)
-                //Vector2 jump = new Vector2(0f, jumpSpeed);
-                //playerRB.velocity += jump;
-            }
+            playerRB.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+            //other option to have more control of jump
+            //set gravity on Physycs2D to 100 or other value bigger than 9.8
+            //(more effective if pixels per unit of sprite is less than normal)
+            //Vector2 jump = new Vector2(0f, jumpSpeed);
+            //playerRB.velocity += jump;
         }
     }
 
@@ -140,6 +135,14 @@ public class Player : MonoBehaviour
         {
             int indexCurrentScene = SceneManager.GetActiveScene().buildIndex;
             SceneManager.LoadScene(indexCurrentScene);
+        }
+    }
+
+    private void PassThrough()
+    {
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+        {
+            StartCoroutine(JumpOff());
         }
     }
 
