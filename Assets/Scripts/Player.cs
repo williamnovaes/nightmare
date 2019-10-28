@@ -59,6 +59,7 @@ public class Player : MonoBehaviour
         playerAnim.SetBool("Running", running > Mathf.Epsilon);
         playerAnim.SetFloat("VelocityX", playerRB.velocity.x);
         playerAnim.SetFloat("VelocityY", playerRB.velocity.y);
+        Debug.Log("Player Velocity Y " + playerRB.velocity.y);
 
         if (CrossPlatformInputManager.GetButtonDown("Fire3"))
         {
